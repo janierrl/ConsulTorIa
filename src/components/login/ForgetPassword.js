@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
   Image,
 } from "react-native";
-
 import {
   Layout,
   Text,
@@ -15,16 +15,33 @@ import {
   useTheme,
   themeColor,
 } from "react-native-rapi-ui";
+import axios from "axios";
 
 export default function ({ navigation }) {
   const { isDarkmode, setTheme } = useTheme();
-  
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function forget() {
-  
+  const forgetPassword = async () => {
+    const data = JSON.stringify({
+      email: email,
+      isRecoverAccount: true
+    });
+
+    await axios.post("http://192.168.1.100:3004/verifyEmail", data, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(response => {
+      Alert.alert(
+        response.data,
+        navigation.navigate("VerifyEmail", { email: email, isRecoverAccount: true })
+      );
+    }).catch(error => {
+      Alert.alert(error.response.data);
+    });
   }
+  
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <Layout>
@@ -66,12 +83,12 @@ export default function ({ navigation }) {
                 padding: 30,
               }}
             >
-              Olvidé mi contraseña
+              Recuperar cuenta
             </Text>
-            <Text>Correo electrónico </Text>
+            <Text>Correo</Text>
             <TextInput
               containerStyle={{ marginTop: 15 }}
-              placeholder="Introduce un correo "
+              placeholder="Introduce tu correo"
               value={email}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -80,9 +97,9 @@ export default function ({ navigation }) {
               onChangeText={(text) => setEmail(text)}
             />
             <Button
-              text={loading ? "Cargando" : "Enviar correo "}
+              text={loading ? "Cargando" : "Enviar correo"}
               onPress={() => {
-                forget();
+                forgetPassword();
               }}
               style={{
                 marginTop: 20,
@@ -98,7 +115,7 @@ export default function ({ navigation }) {
                 justifyContent: "center",
               }}
             >
-              <Text size="md">Ya tienes una cuenta?</Text>
+              <Text size="md">¿Ya tienes una cuenta?</Text>
               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate("Login");
