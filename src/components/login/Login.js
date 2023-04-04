@@ -1,60 +1,51 @@
 import React, { useState } from "react";
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Alert, Keyboard, TouchableWithoutFeedback, ScrollView,
-    TouchableOpacity,
-    View,
-    KeyboardAvoidingView,
-    Image } from "react-native";
-import {Layout,Text,TextInput,Button,useTheme,themeColor,} from "react-native-rapi-ui";
-//import { getAuth,createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-//import {initializeApp} from "firebase/app";
-//import {firebaseConfig} from "../../../firebase-config";
-const appId = "1047121222092614";
+import {
+  Alert,
+  ScrollView,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  Image,
+} from "react-native";
+import {
+  Layout,
+  Text,
+  TextInput,
+  Button,
+  useTheme,
+  themeColor,
+} from "react-native-rapi-ui";
+import axios from "axios";
 
 export default function ({ navigation }) {
-    
   const { isDarkmode, setTheme } = useTheme();
-  
-  const [email, setEmail] = useState("");
+  const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  //const app=initializeApp(firebaseConfig);
-  //const auth = getAuth(app);
-  const prueb=()=>{
-    if (email == "gdzayas@gmail.com" && password =="123456"){
-      Alert.alert(
-        "Bienvenido Giovanni , a la herramienta ConsulTorIa ",
-        navigation.navigate("OK"),)
-    }else {
-      Alert.alert(
-        "Credenciales incorrectas ",
-        )
-    }
-    }
-  /*const createAccount=()=>{
-    createUserWithEmailAndPassword(auth,email,password)
-    .then((userCredential)=>{
-      console.log("Cuenta creada")
-      const user= userCredential.user;
-      console.log(user)
-    })
-    .catch(error =>{
-      console.log(error)
-    })
-  }
+  const login = async () => {
+    const data = JSON.stringify({
+      username: user,
+      password: password
+    });
 
-  const login=()=>{
-    signInWithEmailAndPassword(auth,email,password)
-    .then((userCredential)=>{
-      console.log("Se ha autenticado")
-      const user= userCredential.user;
-      console.log(user)
-    })
-    .catch(error =>{
-      console.log(error)
-    })
-  }*/
+    await axios.post("http://192.168.1.100:3004/signin", data, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(response => {
+      const { auth, token } = response.data;
+  
+      if (auth) {
+        Alert.alert(
+          `Bienvenido ${user} a ConsulTorIa`,
+          navigation.navigate("OK")
+        );
+      }
+    }).catch(error => {
+      Alert.alert(error.response.data);
+    });
+  };
 
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
@@ -97,24 +88,23 @@ export default function ({ navigation }) {
               }}
               size="h3"
             >
-              Login
+              Iniciar sesión
             </Text>
-            <Text>Email</Text>
+            <Text>Usuario</Text>
             <TextInput
               containerStyle={{ marginTop: 15 }}
-              placeholder="Enter your email"
-              value={email}
+              placeholder="Introduce tu usuario"
+              value={user}
               autoCapitalize="none"
               autoCompleteType="off"
               autoCorrect={false}
-              keyboardType="email-address"
-              onChangeText={(text) => setEmail(text)}
+              onChangeText={(text) => setUser(text)}
             />
 
-            <Text style={{ marginTop: 15 }}>Password</Text>
+            <Text style={{ marginTop: 15 }}>Contraseña</Text>
             <TextInput
               containerStyle={{ marginTop: 15 }}
-              placeholder="Enter your password"
+              placeholder="Introduce tu contraseña"
               value={password}
               autoCapitalize="none"
               autoCompleteType="off"
@@ -123,9 +113,9 @@ export default function ({ navigation }) {
               onChangeText={(text) => setPassword(text)}
             />
             <Button
-              text={loading ? "Loading" : "Continue"}
+              text={loading ? "Cargando" : "Continuar"}
               onPress={() => {
-                prueb();
+                login();
               }}
               style={{
                 marginTop: 20,
@@ -141,7 +131,7 @@ export default function ({ navigation }) {
                 justifyContent: "center",
               }}
             >
-              <Text size="md">Don't have an account?</Text>
+              <Text size="md">¿No tienes cuenta?</Text>
               <TouchableOpacity
                 onPress={() => {
                   navigation.navigate("Register");
@@ -154,7 +144,7 @@ export default function ({ navigation }) {
                     marginLeft: 5,
                   }}
                 >
-                  Register here
+                  Regístrate aquí
                 </Text>
               </TouchableOpacity>
             </View>
@@ -172,7 +162,7 @@ export default function ({ navigation }) {
                 }}
               >
                 <Text size="md" fontWeight="bold">
-                  Forget password
+                  ¿Has olvidado tu contraseña?
                 </Text>
               </TouchableOpacity>
             </View>
@@ -196,7 +186,7 @@ export default function ({ navigation }) {
                     marginLeft: 5,
                   }}
                 >
-                  {isDarkmode ? "☀️ light theme" : "🌑 dark theme"}
+                  {isDarkmode ? "☀️ Tema claro" : "🌑 Tema oscuro"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -204,6 +194,5 @@ export default function ({ navigation }) {
         </ScrollView>
       </Layout>
     </KeyboardAvoidingView>
-    );
-    
+  );
 }
