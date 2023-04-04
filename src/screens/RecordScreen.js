@@ -22,7 +22,7 @@ const Record =  ({navigation})=>{
     //const videoStream = new MediaStream();
     const ws= React.useRef()
     const [status,setStatus] = React.useState({})
-    const socket = io.connect("http://192.168.43.62:3001");
+    const socket = io.connect("http://192.168.1.100:3001");
     const { isDarkmode } = useTheme();
 
     

@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled from "styled-components";
 
 export const Container = styled.View`
   flex: 1;
@@ -37,13 +37,11 @@ export const ObservationInfoText = styled.View`
 export const ObservationName = styled.Text`
   font-size: 14px;
   font-weight: bold;
-  
 `;
 
 export const DateTime = styled.Text`
   font-size: 12px;
   color: #666;
-  
 `;
 
 export const ObservationText = styled.Text`

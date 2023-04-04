@@ -4,12 +4,10 @@ import {
     Text,
     themeColor,
     useTheme,
-    Button ,
     TextInput,
 } from "react-native-rapi-ui";
 import { Ionicons } from "@expo/vector-icons";
-import React, {useEffect, useState} from 'react';
-
+import React, { useState } from 'react';
 import {
     Alert,
     StatusBar,
@@ -18,7 +16,6 @@ import {
     View,
 } from 'react-native';
 import {Dropdown} from 'react-native-element-dropdown';
-
 import MyDatePicker from '../screens/utils/MyDateTimePicker'
 
 
@@ -29,7 +26,7 @@ export default function ({ navigation }) {
         { label: "Grabación de video", value: "1" },
         { label: "Entrevista", value: "2" },
         { label: "Chat", value: "3" },
-      ]);
+    ]);
     const [isFocus, setIsFocus] = useState(false);
     const { isDarkmode } = useTheme();
     const initalState = {
@@ -50,7 +47,7 @@ export default function ({ navigation }) {
 
             }
         };
-    
+
     return (
         <Layout>
         <TopNav
@@ -95,8 +92,7 @@ export default function ({ navigation }) {
                 onBlur={() => setIsFocus(false)}
                 onChange={item => {
                 
-                }}
-                
+                }} 
             />
             </View>
           {/*  Input */}
