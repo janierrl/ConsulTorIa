@@ -28,7 +28,7 @@ export default function ({ navigation }) {
       isRecoverAccount: true
     });
 
-    await axios.post("http://192.168.1.100:3004/verifyEmail", data, {
+    await axios.post("http://192.168.1.102:3004/verifyEmail", data, {
       headers: {
         'Content-Type': 'application/json'
       },

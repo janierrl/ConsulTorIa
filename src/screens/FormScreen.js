@@ -42,7 +42,7 @@ export default function ({ navigation }) {
   
   const procdata  =async () => {
     try {
-      const response = await fetch('http://192.168.1.100:4000/api/procesos');
+      const response = await fetch('http://192.168.1.102:4000/api/procesos');
       const json = await response.json();
       setData(json.proc);
     } catch (error) {
@@ -54,7 +54,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     var config = {
       method: 'get',
-      url: "http://192.168.1.100:4000/api/procesos",
+      url: "http://192.168.1.102:4000/api/procesos",
     };
 
     axios(config)
@@ -78,7 +78,7 @@ export default function ({ navigation }) {
   
   const uebdata  =async () => {
     try {
-      const response = await fetch('http://192.168.1.100:4000/api/ueb');
+      const response = await fetch('http://192.168.1.102:4000/api/ueb');
       const json = await response.json();
       setData(json.ueb);
     } catch (error) {
@@ -90,7 +90,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     var config = {
       method: 'get',
-      url: "http://192.168.1.100:4000/api/ueb",
+      url: "http://192.168.1.102:4000/api/ueb",
     };
 
     axios(config)
@@ -113,7 +113,7 @@ export default function ({ navigation }) {
 
   const entidaddata  =async () => {
     try {
-      const response = await fetch('http://192.168.1.100:4000/api/entidad');
+      const response = await fetch('http://192.168.1.102:4000/api/entidad');
       const json = await response.json();
       setData(json.entidad);
     } catch (error) {
@@ -125,7 +125,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     var config = {
       method: 'get',
-      url: "http://192.168.1.100:4000/api/entidad",
+      url: "http://192.168.1.102:4000/api/entidad",
     };
 
     axios(config)
@@ -147,7 +147,7 @@ export default function ({ navigation }) {
   }, []);
   const unidaddata  =async () => {
     try {
-      const response = await fetch('http://192.168.1.100:4000/api/unidad');
+      const response = await fetch('http://192.168.1.102:4000/api/unidad');
       const json = await response.json();
       setData(json.unidad);
     } catch (error) {
@@ -160,7 +160,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     var config = {
       method: 'get',
-      url: "http://192.168.1.100:4000/api/unidad",
+      url: "http://192.168.1.102:4000/api/unidad",
     };
 
     axios(config)
@@ -183,7 +183,7 @@ export default function ({ navigation }) {
   
   const areadata  =async () => {
     try {
-      const response = await fetch('http://192.168.1.100:4000/api/area');
+      const response = await fetch('http://192.168.1.102:4000/api/area');
       const json = await response.json();
       setData(json.area);
     } catch (error) {
@@ -196,7 +196,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     var config = {
       method: 'get',
-      url: "http://192.168.1.100:4000/api/area",
+      url: "http://192.168.1.102:4000/api/area",
     };
 
     axios(config)
@@ -219,7 +219,7 @@ export default function ({ navigation }) {
   
   const trabajadoresdata  =async () => {
     try {
-      const response = await fetch('http://192.168.1.100:4000/api/trabajadores');
+      const response = await fetch('http://192.168.1.102:4000/api/trabajadores');
       const json = await response.json();
       setData(json.trabajadores);
     } catch (error) {
@@ -232,7 +232,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     var config = {
       method: 'get',
-      url: "http://192.168.1.100:4000/api/trabajadores",
+      url: "http://192.168.1.102:4000/api/trabajadores",
     };
 
     axios(config)

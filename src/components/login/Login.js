@@ -29,7 +29,7 @@ export default function ({ navigation }) {
       password: password
     });
 
-    await axios.post("http://192.168.1.100:3004/signin", data, {
+    await axios.post("http://192.168.1.102:3004/signin", data, {
       headers: {
         'Content-Type': 'application/json'
       },

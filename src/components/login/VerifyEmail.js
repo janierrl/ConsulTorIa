@@ -30,7 +30,7 @@ export default function ({ navigation }) {
       code: code
     });
 
-    await axios.post("http://192.168.1.100:3004/verifyCode", temp, {
+    await axios.post("http://192.168.1.102:3004/verifyCode", temp, {
       headers: {
         'Content-Type': 'application/json'
       },
@@ -38,7 +38,7 @@ export default function ({ navigation }) {
       Alert.alert(response.data);
 
       if (isRecoverAccount === false) {
-        await axios.post("http://192.168.1.100:3004/signup", data, {
+        await axios.post("http://192.168.1.102:3004/signup", data, {
           headers: {
             'Content-Type': 'application/json'
           },
