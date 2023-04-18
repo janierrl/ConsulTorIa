@@ -100,7 +100,7 @@ const Record =  ({navigation})=>{
               />
               <Button
                 style={{ marginTop: 10 }}
-                text="Descargar Archivo" onPress={downloadMessage}
+                text="Subir Archivo" onPress={downloadMessage}
                 leftContent={
                   <Ionicons name="cloud-upload" size={24} color="black" />
                 }
