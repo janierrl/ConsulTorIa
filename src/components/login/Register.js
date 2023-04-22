@@ -149,60 +149,6 @@ export default function ({ navigation }) {
               disabled={loading}
             />
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginTop: 15,
-                  justifyContent: "center",
-                }}
-              >
-                <Text fontFamily="Lato-Regular" size="md">
-                  O, regístrate con ...
-                </Text>
-              </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
-              <Button
-                leftContent={
-                  <Ionicons name="logo-google" size={24} color="black" />
-                }
-                onPress={() => {
-                }}
-                style={{
-                  marginTop: 20,
-                  paddingHorizontal: 30,
-                }}
-              ></Button>
-              <Button
-                onPress={() => {
-                }}
-                leftContent={
-                  <Ionicons name="logo-facebook" size={24} color="black" />
-                }
-                style={{
-                  marginTop: 20,
-                  paddingHorizontal: 30,
-                }}
-              />
-              <Button
-                onPress={() => {
-                }}
-                leftContent={
-                  <Ionicons name="logo-twitter" size={24} color="black" />
-                }
-                style={{
-                  marginTop: 20,
-                  paddingHorizontal: 30,
-                }}
-              />
-            </View>
-
             <View
               style={{
                 flexDirection: "row",
