@@ -24,18 +24,17 @@ export default function ({ navigation }) {
 
   const forgetPassword = async () => {
     const data = JSON.stringify({
-      email: email,
-      isRecoverAccount: true
+      email: email
     });
 
-    await axios.post("http://192.168.1.102:3004/verifyEmail", data, {
+    await axios.post("http://192.168.1.100:3004/verifyEmailRecover", data, {
       headers: {
         'Content-Type': 'application/json'
       },
     }).then(response => {
       Alert.alert(
         response.data,
-        navigation.navigate("VerifyEmail", { email: email, isRecoverAccount: true })
+        navigation.navigate("VerifyEmail", { email: email, role: 'recover' })
       );
     }).catch(error => {
       Alert.alert(error.response.data);
@@ -55,14 +54,14 @@ export default function ({ navigation }) {
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              backgroundColor: isDarkmode ? "#17171E" : themeColor.white100,
+              backgroundColor: isDarkmode ? "#17171E" : themeColor.white,
             }}
           >
             <Image
               resizeMode="contain"
               style={{
-                height: 220,
-                width: 220,
+                height: 100,
+                width: 100,
               }}
               source={require("../../../assets/forget.png")}
             />
@@ -83,7 +82,7 @@ export default function ({ navigation }) {
                 padding: 30,
               }}
             >
-              Recuperar cuenta
+              Recupera tu cuenta
             </Text>
             <Text>Correo</Text>
             <TextInput
@@ -97,7 +96,7 @@ export default function ({ navigation }) {
               onChangeText={(text) => setEmail(text)}
             />
             <Button
-              text={loading ? "Cargando" : "Enviar correo"}
+              text={loading ? "Cargando" : "Enviar"}
               onPress={() => {
                 forgetPassword();
               }}

@@ -21,7 +21,7 @@ import axios from "axios";
 export default function ({ navigation }) {
   const { isDarkmode, setTheme } = useTheme();
   const [code, setCode] = useState("");
-  const { email, isRecoverAccount, data } = useRoute().params;
+  const { email, role, data } = useRoute().params;
   const [loading, setLoading] = useState(false);
 
   const verifyEmail = async () => {
@@ -30,15 +30,15 @@ export default function ({ navigation }) {
       code: code
     });
 
-    await axios.post("http://192.168.1.102:3004/verifyCode", temp, {
+    await axios.post("http://192.168.1.100:3004/verifyCode", temp, {
       headers: {
         'Content-Type': 'application/json'
       },
     }).then(async response => {
       Alert.alert(response.data);
 
-      if (isRecoverAccount === false) {
-        await axios.post("http://192.168.1.102:3004/signup", data, {
+      if (role === 'register') {
+        await axios.post("http://192.168.1.100:3004/signup", data, {
           headers: {
             'Content-Type': 'application/json'
           },
@@ -46,8 +46,19 @@ export default function ({ navigation }) {
           const { auth, token } = response.data;
           if (auth) { navigation.navigate("Login") };
         });
-      } else {
+      } else if (role === 'recover') {
         navigation.navigate("NewPassword", { email: email })
+      } else if (role === 'update') {
+        await axios.post("http://192.168.1.100:3004/updateAccount", data, {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+        }).then(response => {
+          Alert.alert(
+            response.data,
+            navigation.navigate("OK")
+          );
+        });
       }
     }).catch(error => {
       Alert.alert(error.response.data);
@@ -76,7 +87,7 @@ export default function ({ navigation }) {
                 height: 220,
                 width: 220,
               }}
-              source={require("../../../assets/login.png")}
+              source={require("../../../assets/forget.png")}
             />
           </View>
           <View

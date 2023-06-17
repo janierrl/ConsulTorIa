@@ -16,6 +16,7 @@ import {
   themeColor,
 } from "react-native-rapi-ui";
 import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function ({ navigation }) {
   const { isDarkmode, setTheme } = useTheme();
@@ -29,12 +30,20 @@ export default function ({ navigation }) {
       password: password
     });
 
-    await axios.post("http://192.168.1.102:3004/signin", data, {
+    await axios.post("http://192.168.1.100:3004/signin", data, {
       headers: {
         'Content-Type': 'application/json'
       },
-    }).then(response => {
+    }).then(async response => {
       const { auth, token } = response.data;
+
+      await AsyncStorage.setItem('token', token)
+        .then(() => {
+          console.log('Token guardado exitosamente');
+        })
+        .catch(error => {
+          console.log('Error al guardar el token:', error);
+        });
   
       if (auth) {
         Alert.alert(
@@ -60,14 +69,14 @@ export default function ({ navigation }) {
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              backgroundColor: isDarkmode ? "#17171E" : themeColor.white100,
+              backgroundColor: isDarkmode ? "#17171E" : themeColor.white,
             }}
           >
             <Image
               resizeMode="contain"
               style={{
-                height: 220,
-                width: 220,
+                height: 100,
+                width: 100,
               }}
               source={require("../../../assets/login.png")}
             />
@@ -88,7 +97,7 @@ export default function ({ navigation }) {
               }}
               size="h3"
             >
-              Iniciar sesión
+              Inicia sesión
             </Text>
             <Text>Usuario</Text>
             <TextInput

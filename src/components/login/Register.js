@@ -30,18 +30,17 @@ export default function ({ navigation }) {
     const data = JSON.stringify({
       username: user,
       email: email,
-      password: password,
-      isRecoverAccount: false
+      password: password
     });
 
-    await axios.post("http://192.168.1.102:3004/verifyEmail", data, {
+    await axios.post("http://192.168.1.100:3004/verifyEmailRegister", data, {
       headers: {
         'Content-Type': 'application/json'
       },
     }).then(response => {
       Alert.alert(
         response.data,
-        navigation.navigate("VerifyEmail", { email: email, isRecoverAccount: false, data: data })
+        navigation.navigate("VerifyEmail", { email: email, role: 'register', data: data })
       );
     }).catch(error => {
       Alert.alert(error.response.data);
@@ -61,14 +60,14 @@ export default function ({ navigation }) {
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              backgroundColor: isDarkmode ? "#17171E" : themeColor.white100,
+              backgroundColor: isDarkmode ? "#17171E" : themeColor.white,
             }}
           >
             <Image
               resizeMode="contain"
               style={{
-                height: 220,
-                width: 220,
+                height: 100,
+                width: 100,
               }}
               source={require("../../../assets/register.png")}
             />
@@ -90,7 +89,7 @@ export default function ({ navigation }) {
                 padding: 30,
               }}
             >
-              Registrarse
+              Registra una cuenta
             </Text>
 
             <Text fontFamily="Lato-Regular">
@@ -139,7 +138,7 @@ export default function ({ navigation }) {
             />
             <Button
               fontFamily="Lato-Regular"
-              text={loading ? "Cargando" : "Crear cuenta"}
+              text={loading ? "Cargando" : "Crear"}
               onPress={() => {
                 register();
               }}
