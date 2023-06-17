@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, FlatList } from "react-native";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import {
   Layout,
   Button,
@@ -34,9 +34,51 @@ export default function ({ navigation }) {
   return (
     <Layout>
       <TopNav
-        middleContent="ConsulTorIa"
-        leftContent={<Ionicons name="person-circle" size={28} color="black" />}
-        leftAction={() => navigation.navigate("Profile")}
+        leftContent={
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: 160,
+            }}
+          >
+            <TouchableOpacity 
+              onPress={() => 
+                navigation.navigate("Profile")
+              }
+            >
+              <Ionicons name="menu-outline" size={28} color="black" />
+            </TouchableOpacity>
+            <Text style={{ fontWeight: 'bold', fontSize: 20, marginTop: -3 }}>ConsulTorIa</Text>
+          </View>
+        }
+
+        rightContent={
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: 75,
+            }}
+          >
+            <TouchableOpacity 
+              onPress={() => 
+                navigation.navigate("Profile")
+              }
+            >
+              <Ionicons name="search-outline" size={28} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => 
+                navigation.navigate("Login")
+              }
+            >
+              <Ionicons name="log-out-outline" size={28} color="black" />
+            </TouchableOpacity>
+          </View>
+        }
       />
       <View
         style={{

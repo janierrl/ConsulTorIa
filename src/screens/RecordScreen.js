@@ -14,40 +14,38 @@ import {
 } from "react-native-rapi-ui";
 //import {Video} from "expo-av"
 
-const Record =  ({navigation})=>{
+const Record =  ({navigation}) => {
 
+  //const videoStream = new MediaStream();
+  const ws= React.useRef()
+  const [status,setStatus] = React.useState({})
+  const socket = io.connect("http://192.168.1.100:3001");
+  const { isDarkmode } = useTheme();
 
-    //const videoStream = new MediaStream();
-    const ws= React.useRef()
-    const [status,setStatus] = React.useState({})
-    const socket = io.connect("http://192.168.1.102:3001");
-    const { isDarkmode } = useTheme();
-
-    
-    const startMessage =()=>{
-        socket.emit("start");
-        console.log("Comienza");
-    };
-    const pausaMessage =()=>{
-      socket.emit("pausa");
-      console.log("PAUSA");
-    };
-    const continuaMessage =()=>{
-      socket.emit("continua");
-      console.log("CONTINUA");
-    };
-    const stopMessage =()=>{
-        socket.emit("stop");
-        console.log("Stop");
-    };
-    const downloadMessage =()=>{
-      socket.emit("upload");
-      console.log("Subelo");
-    };
-    return(
-    
-        <Layout>
-        <TopNav
+  
+  const startMessage =()=>{
+    socket.emit("start");
+    console.log("Comienza");
+  };
+  const pausaMessage =()=>{
+    socket.emit("pausa");
+    console.log("PAUSA");
+  };
+  const continuaMessage =()=>{
+    socket.emit("continua");
+    console.log("CONTINUA");
+  };
+  const stopMessage =()=>{
+      socket.emit("stop");
+      console.log("Stop");
+  };
+  const downloadMessage =()=>{
+    socket.emit("upload");
+    console.log("Subelo");
+  };
+  return(
+    <Layout>
+      <TopNav
         middleContent="Grabación de pantalla"
         leftContent={
           <Ionicons
@@ -58,73 +56,71 @@ const Record =  ({navigation})=>{
         }
         leftAction={() => navigation.goBack()}
       />
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            marginHorizontal: 20,
-          }}
-        >
-          <Section>
-            <SectionContent>
-              <Button
-                style={{ marginTop: 10 }}
-                text="Comenzar Grabación" onPress={startMessage}
-                leftContent={
-                  <Ionicons name="play" size={24} color="black" />
-                }
-              />
-              <Button
-                style={{ marginTop: 10 }}
-                text="Pausar Grabación" onPress={pausaMessage}
-                leftContent={
-                  <Ionicons name="pause" size={24} color="black" />
-                }
-              />
-              <Button
-                style={{ marginTop: 10 }}
-                text="Continuar Grabación" onPress={continuaMessage}
-                leftContent={
-                  <Ionicons name="play-skip-forward" size={24} color="black" />
-                }
-              />
-              <Button
-                text="Finalizar Grabación" onPress={stopMessage}
-                style={{
-                  marginTop: 10,
-                }}
-                leftContent={
-                  <Ionicons name="stop" size={24} color="black" />
-                }
-              />
-              <Button
-                style={{ marginTop: 10 }}
-                text="Subir Archivo" onPress={downloadMessage}
-                leftContent={
-                  <Ionicons name="cloud-upload" size={24} color="black" />
-                }
-              />
-
-              <Button
-              text="Chat"
-              onPress={() => {
-                navigation.navigate("Chat");
-              }}
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          marginHorizontal: 20,
+        }}
+      >
+        <Section>
+          <SectionContent>
+            <Button
+              style={{ marginTop: 10 }}
+              text="Comenzar Grabación" onPress={startMessage}
+              leftContent={
+                <Ionicons name="play" size={24} color="black" />
+              }
+            />
+            <Button
+              style={{ marginTop: 10 }}
+              text="Pausar Grabación" onPress={pausaMessage}
+              leftContent={
+                <Ionicons name="pause" size={24} color="black" />
+              }
+            />
+            <Button
+              style={{ marginTop: 10 }}
+              text="Continuar Grabación" onPress={continuaMessage}
+              leftContent={
+                <Ionicons name="play-skip-forward" size={24} color="black" />
+              }
+            />
+            <Button
+              text="Finalizar Grabación" onPress={stopMessage}
               style={{
                 marginTop: 10,
               }}
               leftContent={
-                <Ionicons name="chatbox-ellipses" size={24} color="black" />
+                <Ionicons name="stop" size={24} color="black" />
               }
             />
-            </SectionContent>
-          </Section>
-        </View>
-      </Layout>
-    
-            
-    )
+            <Button
+              style={{ marginTop: 10 }}
+              text="Subir Archivo" onPress={downloadMessage}
+              leftContent={
+                <Ionicons name="cloud-upload" size={24} color="black" />
+              }
+            />
+
+            <Button
+            text="Chat"
+            onPress={() => {
+              navigation.navigate("Chat");
+            }}
+            style={{
+              marginTop: 10,
+            }}
+            leftContent={
+              <Ionicons name="chatbox-ellipses" size={24} color="black" />
+            }
+          />
+          </SectionContent>
+        </Section>
+      </View>
+    </Layout>  
+  )
 }
 export default Record 
 

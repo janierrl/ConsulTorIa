@@ -39,9 +39,9 @@ export default function ({ navigation }) {
 						/>
 						<Button
 							onPress={() => {
-								navigation.navigate("Login");
+								navigation.navigate("AccessAccount");
 							}}
-							text="Cerrar Sesión" 
+							text="Gestionar cuenta" 
 							style={{
 								marginTop: 10,
 							}}
