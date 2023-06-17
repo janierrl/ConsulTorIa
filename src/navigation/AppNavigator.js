@@ -18,6 +18,8 @@ import ChatDos from "../screens/ChatDos";
 import Home from "../screens/Home";
 import Profile from "../screens/Profile";
 import About from "../screens/About";
+import AccessAccount from "../components/user/AccessAccount";
+import UpdateAccount from "../components/user/UpdateAccount";
 
 const AuthStack = createNativeStackNavigator();
 const Auth = () => {
@@ -52,6 +54,9 @@ const Main = () => {
       <MainStack.Screen name="FormScreen" component={FormScreen} />
       <MainStack.Screen name="Chat" component={ChatScreen} />
       <MainStack.Screen name="ChatDos" component={ChatDos} />
+      <MainStack.Screen name="AccessAccount" component={AccessAccount} />
+      <MainStack.Screen name="UpdateAccount" component={UpdateAccount} />
+      <MainStack.Screen name="Profile" component={Profile} />
     </MainStack.Navigator>
   );
 };
