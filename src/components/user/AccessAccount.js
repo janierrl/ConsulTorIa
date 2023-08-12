@@ -30,7 +30,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     AsyncStorage.getItem('token')
       .then(async token => {
-        await axios.get("http://192.168.1.100:3004/me", {
+        await axios.get("http://192.168.1.103:3004/me", {
           headers: {
             'Content-Type': 'application/json',
             'x-access-token': token
@@ -52,7 +52,7 @@ export default function ({ navigation }) {
       password: password
     });
 
-    await axios.post("http://192.168.1.100:3004/accessAccount", data, {
+    await axios.post("http://192.168.1.103:3004/accessAccount", data, {
       headers: {
         'Content-Type': 'application/json'
       },
@@ -122,12 +122,22 @@ export default function ({ navigation }) {
             </Text>
             <Text>Contraseña</Text>
             <TextInput
+              rightContent={
+                <TouchableOpacity 
+                  onPress={() => 
+                    navigation.navigate("Profile")
+                  }
+                >
+                  <Ionicons name="eye-outline" size={25} color="#939393" />
+                </TouchableOpacity>
+              }
               containerStyle={{ marginTop: 15 }}
               placeholder="Introduce tu contraseña"
               value={password}
               autoCapitalize="none"
               autoCompleteType="off"
               autoCorrect={false}
+              secureTextEntry={true}
               onChangeText={(text) => setPassword(text)}
             />
 

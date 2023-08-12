@@ -15,6 +15,7 @@ import {
   useTheme,
   themeColor,
 } from "react-native-rapi-ui";
+import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -30,7 +31,7 @@ export default function ({ navigation }) {
       password: password
     });
 
-    await axios.post("http://192.168.1.100:3004/signin", data, {
+    await axios.post("http://192.168.1.103:3004/signin", data, {
       headers: {
         'Content-Type': 'application/json'
       },
@@ -101,7 +102,7 @@ export default function ({ navigation }) {
             </Text>
             <Text>Usuario</Text>
             <TextInput
-              containerStyle={{ marginTop: 15 }}
+              containerStyle={{ marginTop: 5 }}
               placeholder="Introduce tu usuario"
               value={user}
               autoCapitalize="none"
@@ -110,9 +111,18 @@ export default function ({ navigation }) {
               onChangeText={(text) => setUser(text)}
             />
 
-            <Text style={{ marginTop: 15 }}>Contraseña</Text>
+            <Text style={{ marginTop: 10 }}>Contraseña</Text>
             <TextInput
-              containerStyle={{ marginTop: 15 }}
+              rightContent={
+                <TouchableOpacity 
+                  onPress={() => 
+                    navigation.navigate("Profile")
+                  }
+                >
+                  <Ionicons name="eye-outline" size={25} color="#939393" />
+                </TouchableOpacity>
+              }
+              containerStyle={{ marginTop: 5 }}
               placeholder="Introduce tu contraseña"
               value={password}
               autoCapitalize="none"
