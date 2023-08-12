@@ -33,7 +33,7 @@ export default function ({ navigation }) {
       password: password
     });
 
-    await axios.post("http://192.168.1.100:3004/verifyEmailRegister", data, {
+    await axios.post("http://192.168.1.103:3004/verifyEmailRegister", data, {
       headers: {
         'Content-Type': 'application/json'
       },

@@ -33,7 +33,7 @@ export default function ({ navigation }) {
   useEffect(() => {
     AsyncStorage.getItem('token')
       .then(async token => {
-        await axios.get("http://192.168.1.100:3004/me", {
+        await axios.get("http://192.168.1.103:3004/me", {
           headers: {
             'Content-Type': 'application/json',
             'x-access-token': token
@@ -61,7 +61,7 @@ export default function ({ navigation }) {
       oldemail: oldemail
     });
 
-    await axios.post("http://192.168.1.100:3004/verifyEmailUpdate", data, {
+    await axios.post("http://192.168.1.103:3004/verifyEmailUpdate", data, {
       headers: {
         'Content-Type': 'application/json'
       },

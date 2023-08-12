@@ -30,7 +30,7 @@ export default function ({ navigation }) {
       code: code
     });
 
-    await axios.post("http://192.168.1.100:3004/verifyCode", temp, {
+    await axios.post("http://192.168.1.103:3004/verifyCode", temp, {
       headers: {
         'Content-Type': 'application/json'
       },
@@ -38,7 +38,7 @@ export default function ({ navigation }) {
       Alert.alert(response.data);
 
       if (role === 'register') {
-        await axios.post("http://192.168.1.100:3004/signup", data, {
+        await axios.post("http://192.168.1.103:3004/signup", data, {
           headers: {
             'Content-Type': 'application/json'
           },
@@ -49,7 +49,7 @@ export default function ({ navigation }) {
       } else if (role === 'recover') {
         navigation.navigate("NewPassword", { email: email })
       } else if (role === 'update') {
-        await axios.post("http://192.168.1.100:3004/updateAccount", data, {
+        await axios.post("http://192.168.1.103:3004/updateAccount", data, {
           headers: {
             'Content-Type': 'application/json'
           },
