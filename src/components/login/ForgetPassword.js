@@ -1,26 +1,52 @@
 import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   TouchableOpacity,
   View,
   KeyboardAvoidingView,
-  Image,
-} from "react-native";
-import {
-  Layout,
+  StyleSheet,
   Text,
   TextInput,
-  Button,
-  useTheme,
-  themeColor,
-} from "react-native-rapi-ui";
+  Modal
+} from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
 export default function ({ navigation }) {
-  const { isDarkmode, setTheme } = useTheme();
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [infoModal, setInfoModal] = useState("");
+  const borderBottomWidth = useSharedValue(1);
+  const borderColor = useSharedValue('#939393');
+
+  const textInputStyles = useAnimatedStyle(() => {
+    return {
+      borderBottomWidth: borderBottomWidth.value,
+      borderBottomColor: borderColor.value,
+    };
+  });
+
+  const animateBorder = (focused) => {
+    borderBottomWidth.value = withTiming(focused ? 2 : 1, {
+      duration: 75,
+      easing: Easing.ease,
+    });
+    borderColor.value = focused ? 'blue' : '#939393';
+  };
+
+  const handleFocus = () => {
+    animateBorder(true);
+  };
+
+  const handleBlur = () => {
+    animateBorder(false);
+  };
 
   const forgetPassword = async () => {
     const data = JSON.stringify({
@@ -32,132 +58,197 @@ export default function ({ navigation }) {
         'Content-Type': 'application/json'
       },
     }).then(response => {
-      Alert.alert(
-        response.data,
-        navigation.navigate("VerifyEmail", { email: email, role: 'recover' })
-      );
+        setInfo(response.data);
+        navigation.navigate("VerifyEmail", { email: email, role: 'recover' });
+
     }).catch(error => {
-      Alert.alert(error.response.data);
+      setInfo(error.response.data);
     });
-  }
+  };
+  
+  const setInfo = (info) => {
+    setIsModalVisible(true);
+    setInfoModal(info);
+  };
   
   return (
-    <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
-      <Layout>
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              backgroundColor: isDarkmode ? "#17171E" : themeColor.white,
-            }}
-          >
-            <Image
-              resizeMode="contain"
-              style={{
-                height: 100,
-                width: 100,
-              }}
-              source={require("../../../assets/forget.png")}
-            />
+    <KeyboardAvoidingView behavior="height" style={{ flexGrow: 1 }}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <MaterialCommunityIcons name="account-reactivate" style={styles.recoverIcon} />
+            <Text style={styles.titleHeader}>Recupera tu cuenta</Text>
           </View>
-          <View
-            style={{
-              flex: 3,
-              paddingHorizontal: 20,
-              paddingBottom: 20,
-              backgroundColor: isDarkmode ? themeColor.dark : themeColor.white,
+          <View style={styles.textInputContainer}>
+            <View>
+              <Animated.View
+                style={[
+                  styles.textInput,
+                  textInputStyles,
+                  styles.textInputEmail,
+                ]}
+              >
+                <TextInput
+                  placeholder="Introduce tu correo"
+                  value={email}
+                  autoCapitalize="none"
+                  autoCompleteType="off"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  onChangeText={(text) => setEmail(text)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              </Animated.View>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => {
+              forgetPassword();
             }}
           >
-            <Text
-              size="h3"
-              fontWeight="bold"
-              style={{
-                alignSelf: "center",
-                padding: 30,
-              }}
-            >
-              Recupera tu cuenta
-            </Text>
-            <Text>Correo</Text>
-            <TextInput
-              containerStyle={{ marginTop: 15 }}
-              placeholder="Introduce tu correo"
-              value={email}
-              autoCapitalize="none"
-              autoCompleteType="off"
-              autoCorrect={false}
-              keyboardType="email-address"
-              onChangeText={(text) => setEmail(text)}
-            />
-            <Button
-              text={loading ? "Cargando" : "Enviar"}
+            <Text style={styles.buttonText}>Enviar</Text>
+          </TouchableOpacity>
+          <View style={styles.textContainer}>
+            <View style={styles.signupContainer}>
+              <Text>¿Ya tienes una cuenta?</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  navigation.goBack();
+                }}
+              >
+                <Text style={styles.linkText}>
+                  Autentícate aquí
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <Modal
+            visible={isModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => {
+              setIsModalVisible(false);
+            }}
+          >
+            <TouchableOpacity
+              style={styles.modalInfoOut}
+              activeOpacity={1}
               onPress={() => {
-                forgetPassword();
-              }}
-              style={{
-                marginTop: 20,
-              }}
-              disabled={loading}
-            />
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 15,
-                justifyContent: "center",
-              }}
-            >
-              <Text size="md">¿Ya tienes una cuenta?</Text>
-              <TouchableOpacity
-                onPress={() => {
-                  navigation.navigate("Login");
-                }}
-              >
-                <Text
-                  size="md"
-                  fontWeight="bold"
-                  style={{
-                    marginLeft: 5,
-                  }}
-                >
-                  Autentícate aqui
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginTop: 30,
-                justifyContent: "center",
+                setIsModalVisible(false);
               }}
             >
               <TouchableOpacity
-                onPress={() => {
-                  isDarkmode ? setTheme("light") : setTheme("dark");
-                }}
+                style={styles.modalInfo}
+                activeOpacity={1}
               >
-                <Text
-                  size="md"
-                  fontWeight="bold"
-                  style={{
-                    marginLeft: 5,
-                  }}
-                >
-                  {isDarkmode ? "☀️ light theme" : "🌑 Tema Oscuro"}
-                </Text>
+                <Text style={styles.modalInfoTextHeader}>{infoModal}</Text>
+                <View style={styles.containerModalInfoButton}> 
+                  <TouchableOpacity 
+                    style={styles.modalInfoButton}
+                    onPress={() => {
+                      setIsModalVisible(false);
+                    }}
+                  >
+                    <Text>Aceptar</Text>
+                  </TouchableOpacity>
+                </View>
               </TouchableOpacity>
-            </View>
-          </View>
-        </ScrollView>
-      </Layout>
+            </TouchableOpacity>
+          </Modal>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    backgroundColor: 'white',
+  },
+  header: {
+    paddingTop: '25%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recoverIcon: {
+    fontSize: 48,
+    color: 'black',
+    marginBottom: 35,
+  },
+  titleHeader: {
+    color: 'black',
+    fontWeight: '500',
+  },
+  textInput: {
+    marginBottom: 20,
+  },
+  textInputEmail: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    down: 0,
+  },
+  textInputContainer: {
+    marginTop: 35,
+    height: 50,
+  },
+  button: {
+    marginTop: 35,
+    backgroundColor: '#3366FF',
+    borderRadius: 7,
+    paddingVertical: 13,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  signupContainer: {
+    flexDirection: 'row',
+  },
+  linkText: {
+    marginLeft: 5,
+    fontWeight: '500',
+  },
+  textContainer: {
+    paddingTop: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalInfoOut: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  modalInfo: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    margin:20,
+    borderRadius: 20,
+    paddingHorizontal: 30,
+    paddingVertical: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+  },
+  modalInfoTextHeader: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  containerModalInfoButton: {
+    flexDirection: 'row', 
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginTop: 25,
+  },
+  modalInfoButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

@@ -1,27 +1,29 @@
-import React from "react"
-import { View, StyleSheet, KeyboardAvoidingView, ScrollView, TouchableOpacity, Modal } from "react-native"
-import  { useState, useEffect, useCallback, useRef } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef
+} from "react"
+import { View,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Text,
+  TextInput,
+  Modal
+} from "react-native"
 import { Ionicons } from "@expo/vector-icons";
 import io from "socket.io-client";
-import {
-    Layout,
-    Button,
-    TopNav,
-    Section,
-    SectionContent,
-    themeColor,
-    useTheme,
-    Text,
-    TextInput,
-} from "react-native-rapi-ui";
 import { useRoute } from '@react-navigation/native';
-//import {Video} from "expo-av"
+import axios from "axios";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 
-const Record = ({navigation}) => {
-
-  //const videoStream = new MediaStream();
-  const ws= React.useRef()
-  const [status,setStatus] = React.useState({})
+export default function ({ navigation }) {
   const socket = io.connect("http://192.168.1.103:3001");
   const [isStartedRequest, setIsStartedRequest] = useState(false);
   const [isPlayedRequest, setIsPlayedRequest] = useState(false);
@@ -31,6 +33,8 @@ const Record = ({navigation}) => {
   const [isPausedResponse, setIsPausedResponse] = useState(true);
   const [isModalSaveVisible, setIsModalSaveVisible] = useState(false);
   const [isModalFinishVisible, setIsModalFinishVisible] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [infoModal, setInfoModal] = useState("");
   const [isDiscarded, setIsDiscarded] = useState(false);
   const [isStartedConsultancy, setIsStartedConsultancy] = useState(false);
   const [timer, setTimer] = useState(0);
@@ -43,20 +47,149 @@ const Record = ({navigation}) => {
   const [endDateConsultancy, setEndDateConsultancy] = useState("");
   const endDateConsultancyRef = useRef(endDateConsultancy);
   const [state, setState] = useState("");
-  const {
-    nameConsultancy,
-    observationType,
-    goals,
-    entidad,
-    ueb,
-    unidad,
-    area,
-    proc,
-    trabajador
-  } = useRoute().params;
   const [nameScreen, setNameScreen] = useState("");
   const nameScreenRef = useRef(nameScreen);
-  const { isDarkmode } = useTheme();
+  const { dataParams } = useRoute().params;
+  const borderBottomWidth = useSharedValue(1);
+  const borderColor = useSharedValue('#939393');
+
+  const textInputStyles = useAnimatedStyle(() => {
+    return {
+      borderBottomWidth: borderBottomWidth.value,
+      borderBottomColor: borderColor.value,
+    };
+  });
+
+  const animateBorder = (focused) => {
+    borderBottomWidth.value = withTiming(focused ? 2 : 1, {
+      duration: 75,
+      easing: Easing.ease,
+    });
+    borderColor.value = focused ? 'blue' : '#939393';
+  };
+
+  const handleFocus = () => {
+    animateBorder(true);
+  };
+
+  const handleBlur = () => {
+    animateBorder(false);
+  };
+
+  const formatTime = (time) => {
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = time % 60;
+
+    return `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+  };
+
+  const start = async () => {
+    setIsStartedRequest(true);
+    setIsPlayedRequest(!isPlayedRequest);
+    setIsPausedRequest(!isPausedRequest);
+  }
+
+  const stop = async () => {
+    setIsModalSaveVisible(true);
+  }
+
+  const discard = async () => {
+    setIsDiscarded(true);
+    setIsStartedRequest(false);
+  }
+
+  const upload = async () => {
+    const data = JSON.stringify({
+      prefix: `Consultorías TI/${dataParams.nameConsultancy}/Observaciones/${nameScreenRef.current}`,
+    });
+
+    await axios.post("http://192.168.1.103:3002/nameFolders", data, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    }).then(async response => {
+      const folderNames = response.data;
+
+      if (folderNames.includes(nameScreenRef.current)) {
+        setInfo('La observación ya existe');
+        setIsModalSaveVisible(false);
+      } else {
+        setIsDiscarded(false);
+        setIsStartedRequest(false);
+      }
+    }).catch(error => {
+      setInfo(error.response.data);
+    });
+  }
+
+  const finish = async () => {
+    setIsModalFinishVisible(false);
+    navigation.navigate("Home");
+  }
+  
+  const startMessage = async () => {
+    socket.emit("start");
+  };
+
+  const stopMessage = async () => {
+    socket.emit("stop");
+  };
+
+  const continueMessage = async () => {
+    socket.emit("continua");
+  };
+
+  const pauseMessage = async () => {
+    socket.emit("pausa");
+  };
+
+  const uploadMessage = async () => {
+    socket.emit("upload", {
+      nameScreen: nameScreenRef.current,
+      startDate: startDateRef.current,
+      endDate: endDateRef.current,
+      nameConsultancy: dataParams.nameConsultancy,
+      startDateConsultancy: startDateConsultancyRef.current,
+      endDateConsultancy: endDateConsultancyRef.current,
+      author: dataParams.author,
+      entity: dataParams.entity, 
+      ueb: dataParams.ueb, 
+      unit: dataParams.unit, 
+      area: dataParams.area, 
+      process: dataParams.process, 
+      worker: dataParams.worker,
+      observationType: dataParams.observationType,
+      view: dataParams.view,
+      collaborators: dataParams.collaborators,
+      goals: dataParams.goals
+    });
+  };
+
+  const startResponse = useCallback(() => {
+    setIsStartedResponse(true);
+    setIsPlayedResponse(!isPlayedResponse);
+    setIsPausedResponse(!isPausedResponse);
+  }, [isPlayedResponse, isPausedResponse]);
+
+  const discardResponse =  useCallback(() => {
+    setIsStartedResponse(false);
+    setIsModalSaveVisible(false);
+    setTimer(0);
+  }, []);
+
+  const uploadResponse = useCallback(() => {
+    setIsStartedResponse(false);
+    setIsModalSaveVisible(false);
+    setIsModalFinishVisible(true);
+    setTimer(0);
+    uploadMessage();
+  }, []);
+
+  const setInfo = (info) => {
+    setIsModalVisible(true);
+    setInfoModal(info);
+  };
 
   useEffect(() => {
     if (state === 'start') {
@@ -79,14 +212,16 @@ const Record = ({navigation}) => {
       }, 1000);
     };
 
-    if (isPlayedRequest) {
-      setState('continue');
-    }
-
     return () => {
       clearInterval(intervalId);
     };
-  }, [isPlayedRequest, isPlayedResponse]);
+  }, [isPlayedResponse]);
+
+  useEffect(() => {
+    if (isPlayedRequest) {
+      setState('continue');
+    }
+  }, [isPlayedRequest]);
 
   useEffect(() => {
     if (isPausedRequest) {
@@ -135,88 +270,6 @@ const Record = ({navigation}) => {
     }
   }, [isStartedResponse, isPausedResponse]);
 
-  const formatTime = (time) => {
-    const hours = Math.floor(time / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = time % 60;
-
-    return `${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-  };
-
-  const start = async () => {
-    setIsStartedRequest(true);
-    setIsPlayedRequest(!isPlayedRequest);
-    setIsPausedRequest(!isPausedRequest);
-  }
-
-  const stop = async () => {
-    setIsModalSaveVisible(true);
-  }
-
-  const discard = async () => {
-    setIsDiscarded(true);
-    setIsStartedRequest(false);
-  }
-
-  const upload = async () => {
-    setIsDiscarded(false);
-    setIsStartedRequest(false);
-  }
-
-  const finish = async () => {
-    setIsModalFinishVisible(false);
-    navigation.navigate("Home");
-  }
-  
-  const startMessage = async () => {
-    socket.emit("start");
-  };
-
-  const stopMessage = async () => {
-    socket.emit("stop");
-  };
-
-  const continueMessage = async () => {
-    socket.emit("continua");
-  };
-
-  const pauseMessage = async () => {
-    socket.emit("pausa");
-  };
-
-  const uploadMessage = async () => {
-    socket.emit("upload", {
-      nameScreen: nameScreenRef.current,
-      startDate: startDateRef.current,
-      endDate: endDateRef.current,
-      nameConsultancy: nameConsultancy,
-      startDateConsultancy: startDateConsultancyRef.current,
-      endDateConsultancy: endDateConsultancyRef.current,
-      observationType: observationType,
-      goals: goals
-    });
-  };
-
-  const startResponse = useCallback(() => {
-    setIsStartedResponse(true);
-    setIsPlayedResponse(!isPlayedResponse);
-    setIsPausedResponse(!isPausedResponse);
-  }, [isPlayedResponse, isPausedResponse]);
-
-  const discardResponse =  useCallback(() => {
-    setIsStartedResponse(false);
-    setIsModalSaveVisible(false);
-    setTimer(0);
-  }, []);
-
-  const uploadResponse = useCallback(() => {
-    setIsStartedResponse(false);
-    setIsModalSaveVisible(false);
-    setIsModalFinishVisible(true);
-    setTimer(0);
-    uploadMessage();
-  }, []);
-
   useEffect(() => {
     socket.on("started_record", startResponse);
     socket.on("paused_record", startResponse);
@@ -240,199 +293,99 @@ const Record = ({navigation}) => {
   }, [isDiscarded, startResponse, discardResponse, uploadResponse]);
 
   return(
-    <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
-      <Layout>
-        <TopNav
-          middleContent="Grabación de pantalla"
-          leftContent={
-            isStartedConsultancy ?
-              null :
-              <Ionicons
-                name="chevron-back"
-                size={20}
-                color={isDarkmode ? themeColor.white100 : themeColor.black}
-              />
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      <View style={styles.container}>
+        <View style={styles.counter}>
+          {isStartedResponse &&
+            <Text style={styles.counterText}>
+              {formatTime(timer)}
+            </Text>
           }
-          leftAction={() => {
-            isStartedConsultancy ?
-              undefined :
-              navigation.goBack();
-          }}
-        />
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-          }}
-        >
-          <View
-            style={{
-              flex: 1,
-              paddingHorizontal: 20,
-              paddingBottom: 20,
-              justifyContent: "center",
-              alignContent: "center",
-              backgroundColor: isDarkmode ? themeColor.dark : themeColor.white,
-            }}
-          >
-            <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
-              {isStartedResponse ?
-                <Text
-                  style={{
-                    fontSize: 55, 
-                    textAlign: 'center',
+        </View>
+        <View style={styles.containerControls}>
+          <View style={styles.controls}>
+            {isStartedResponse &&
+              isPausedResponse &&
+                <TouchableOpacity
+                  style={[
+                    styles.secondControl,
+                    styles.reloadControl,
+                  ]}
+                  onPress={() => {
+                    discard();
                   }}
                 >
-                  {formatTime(timer)}
-                </Text> :
-                null
-              }
-            </View>
-            <View
-              style={{ 
-                flex: 1, 
-                justifyContent: 'flex-end', 
-                alignItems: 'center' 
+                  <Ionicons
+                    name="reload-outline"
+                    size={20}
+                    color="black"
+                  />
+                </TouchableOpacity>
+            }
+            <TouchableOpacity
+              style={styles.principalControl}
+              onPress={() => {
+                start();
               }}
             >
-              <View 
-                style={{ 
-                  flexDirection: 'row', 
-                  justifyContent: 'center', 
-                  alignItems: 'flex-end' 
-                }}
-              >
-                {isStartedResponse ?
-                  isPausedResponse ?
-                    <TouchableOpacity
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 30,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: 30,
-                        marginRight: 70,
-                      }}
-                      onPress={() => {
-                        discard();
-                      }}
-                    >
-                      <Ionicons
-                        name="reload-outline"
-                        size={20}
-                        color="black"
-                      />
-                    </TouchableOpacity> :
-                    null :
-                  null
-                }
-
+              {isPlayedResponse ?
+                <Ionicons
+                  name="pause-outline"
+                  size={30}
+                  color="black"
+                /> :
+                <View style={styles.playControl} />
+              }
+            </TouchableOpacity>
+            {isStartedResponse &&
+              isPausedResponse &&
                 <TouchableOpacity
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 30,
-                    backgroundColor: themeColor.white,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    marginBottom: 20,
-                    borderWidth: 0.5,
-                    borderColor: themeColor.gray,
-                    borderStyle: 'solid',
-                  }}
+                  style={[
+                    styles.secondControl,
+                    styles.stopControl,
+                  ]}
                   onPress={() => {
-                    start();
+                    stop();
                   }}
                 >
-                  {isPlayedResponse ?
-                    <Ionicons
-                      name="pause-outline"
-                      size={30}
-                      color="black"
-                    /> :
-                    <View
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 25,
-                        backgroundColor: themeColor.danger,
-                      }}
-                    />
-                  }
+                  <Ionicons
+                    name="stop"
+                    size={20}
+                    color="black"
+                  />
                 </TouchableOpacity>
-
-                {isStartedResponse ?
-                  isPausedResponse ?
-                    <TouchableOpacity
-                      style={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 30,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginBottom: 30,
-                        marginLeft: 70,
-                      }}
-                      onPress={() => {
-                        stop();
-                      }}
-                    >
-                      <Ionicons
-                        name="stop"
-                        size={20}
-                        color="black"
-                      />
-                    </TouchableOpacity> :
-                    null :
-                  null
-                }
-              </View>
-
-              <Modal
-                visible={isModalSaveVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => {
-                  setIsModalSaveVisible(false);
-                }}
+            }
+          </View>
+          <Modal
+            visible={isModalSaveVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => {
+              setIsModalSaveVisible(false);
+            }}
+          >
+            <TouchableOpacity
+              style={styles.modalInfoOut}
+              activeOpacity={1}
+              onPress={() => {
+                setIsModalSaveVisible(false)
+              }}
+            >
+              <TouchableOpacity
+                style={styles.modalInfo}
+                activeOpacity={1}
               >
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    justifyContent: 'flex-end',
-                  }}
-                  activeOpacity={1}
-                  onPress={() =>
-                    setIsModalSaveVisible(false)
-                  }
-                >
-                  <TouchableOpacity
-                    style={{
-                      alignItems: 'center',
-                      backgroundColor: isDarkmode ? themeColor.dark : themeColor.white,
-                      margin:20,
-                      borderRadius: 16,
-                      paddingHorizontal: 30,
-                      paddingVertical: 20,
-                      elevation: 8,
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.5,
-                      shadowRadius: 4,
-                    }}
-                    activeOpacity={1}
+                <Text style={styles.modalInfoTextHeader}>
+                  ¿Desea guardar la grabación?
+                </Text>
+                <View style={styles.textInputContainer}>
+                  <Animated.View
+                    style={[
+                      styles.textInput,
+                      textInputStyles,
+                    ]}
                   >
-                    <Text
-                      style={{
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      ¿Desea guardar la grabación?
-                    </Text>
                     <TextInput
-                      containerStyle={{
-                        marginTop: 25,
-                      }}
                       placeholder="Introduce un nombre"
                       value={nameScreen}
                       autoCapitalize="none"
@@ -442,181 +395,252 @@ const Record = ({navigation}) => {
                         setNameScreen(text);
                         nameScreenRef.current = text;
                       }}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
                     />
-                    <View
-                      style={{
-                        width: '100%',
-                        flexDirection: 'row', 
-                        justifyContent: 'space-between',
-                        marginTop: 10,
-                      }}
-                    >
-                      <TouchableOpacity
-                        style={{
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        onPress={() => {
-                          setIsModalSaveVisible(false);
-                        }}
-                      >
-                        <Text>Cancelar</Text>
-                      </TouchableOpacity>
-                      <Text
-                        style={{ 
-                          color: '#c0c0c0',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        |
-                      </Text>
-                      <TouchableOpacity
-                        style={{
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        onPress={() => {
-                          discard();
-                        }}
-                      >
-                        <Text>Descartar</Text>
-                      </TouchableOpacity>
-                      <Text
-                        style={{ 
-                          color: '#c0c0c0',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                      >
-                        |
-                      </Text>
-                      <TouchableOpacity
-                        style={{
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        onPress={() => {
-                          upload();
-                        }}
-                      >
-                        <Text>Guardar</Text>
-                      </TouchableOpacity>
-                    </View>
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              </Modal>
-
-              <Modal
-                visible={isModalFinishVisible}
-                transparent={true}
-                animationType="slide"
-                onRequestClose={() => {
-                  setIsModalFinishVisible(false);
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    flex: 1,
-                    justifyContent: 'flex-end',
-                  }}
-                  activeOpacity={1}
-                  onPress={() =>
-                    setIsModalFinishVisible(false)
-                  }
-                >
+                  </Animated.View>
+                </View>
+                <View style={styles.optionsModal}>
                   <TouchableOpacity
-                    style={{
-                      alignItems: 'center',
-                      backgroundColor: isDarkmode ? themeColor.dark : themeColor.white,
-                      margin:20,
-                      borderRadius: 16,
-                      paddingHorizontal: 30,
-                      paddingVertical: 20,
-                      elevation: 8,
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
-                      shadowOpacity: 0.5,
-                      shadowRadius: 4,
+                    style={styles.modalInfoButton}
+                    onPress={() => {
+                      setIsModalSaveVisible(false);
                     }}
-                    activeOpacity={1}
                   >
-                    <Text
-                      style={{
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      ¿Desea finalizar la consultoría?
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: 'row', 
-                        justifyContent: 'center',
-                        alignItems: 'flex-end',
-                        marginTop: 25,
-                      }}
-                    >
-                      <TouchableOpacity
-                        style={{
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        onPress={() => {
-                          setIsModalFinishVisible(false);
-                        }}
-                      >
-                        <Text>Continuar</Text>
-                      </TouchableOpacity>
-                      <Text
-                        style={{ 
-                          color: '#c0c0c0',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          marginLeft: 23,
-                          marginRight: 23,
-                        }}
-                      >
-                        |
-                      </Text>
-                      <TouchableOpacity
-                        style={{
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                        }}
-                        onPress={() => {
-                          finish();
-                        }}
-                      >
-                        <Text>Finalizar</Text>
-                      </TouchableOpacity>
-                    </View>
+                    <Text>Cancelar</Text>
                   </TouchableOpacity>
-                </TouchableOpacity>
-              </Modal>
-            </View>
-          </View>
-        </ScrollView>
-      </Layout>
-    </KeyboardAvoidingView>  
-  )
+                  <Text style={styles.separatorOptions}>
+                    |
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.modalInfoButton}
+                    onPress={() => {
+                      discard();
+                    }}
+                  >
+                    <Text>Descartar</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.separatorOptions}>
+                    |
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.modalInfoButton}
+                    onPress={() => {
+                      upload();
+                    }}
+                  >
+                    <Text>Guardar</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+          <Modal
+            visible={isModalFinishVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => {
+              setIsModalFinishVisible(false);
+            }}
+          >
+            <TouchableOpacity
+              style={styles.modalInfoOut}
+              activeOpacity={1}
+              onPress={() => {
+                setIsModalFinishVisible(false)
+              }}
+            >
+              <TouchableOpacity
+                style={styles.modalInfo}
+                activeOpacity={1}
+              >
+                <Text style={styles.modalInfoTextHeader}>
+                  ¿Desea finalizar la consultoría?
+                </Text>
+                <View style={styles.containerModalInfoButton}>
+                  <TouchableOpacity
+                    style={styles.modalInfoButton}
+                    onPress={() => {
+                      setIsModalFinishVisible(false);
+                    }}
+                  >
+                    <Text>Continuar</Text>
+                  </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.separatorOptions,
+                      styles.separatorOptionsFinish,
+                    ]}
+                  >
+                    |
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.modalInfoButton}
+                    onPress={() => {
+                      finish();
+                    }}
+                  >
+                    <Text>Finalizar</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+          <Modal
+            visible={isModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => {
+              setIsModalVisible(false);
+            }}
+          >
+            <TouchableOpacity
+              style={styles.modalInfoOut}
+              activeOpacity={1}
+              onPress={() => {
+                setIsModalVisible(false);
+              }}
+            >
+              <TouchableOpacity
+                style={styles.modalInfo}
+                activeOpacity={1}
+              >
+                <Text style={styles.modalInfoTextHeader}>{infoModal}</Text>
+                <View style={styles.containerModalInfoButton}> 
+                  <TouchableOpacity 
+                    style={styles.modalInfoButton}
+                    onPress={() => {
+                      setIsModalVisible(false);
+                      setIsModalSaveVisible(true);
+                    }}
+                  >
+                    <Text>Aceptar</Text>
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </Modal>
+        </View>
+      </View>
+    </ScrollView> 
+  );
 }
-export default Record 
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
+      flex: 1,
+      paddingHorizontal: 20,
+      paddingBottom: 20,
+      justifyContent: "center",
+      alignContent: "center",
+      backgroundColor: 'white',
     },
-    video:{
-        flex:1,
-        alignSelf:'stretch',
-        borderColor:'black'
+    counter:{
+      flex: 1, 
+      justifyContent: 'flex-end', 
+      alignItems: 'center',
     },
-    buttons:{
-        margin:16,
-        marginRight:20,
-        flexDirection:'row'
-    }
+    counterText:{
+      fontSize: 55, 
+      textAlign: 'center',
+    },
+    containerControls: {
+      flex: 1, 
+      justifyContent: 'flex-end', 
+      alignItems: 'center',
+    },
+    controls: {
+      flexDirection: 'row', 
+      justifyContent: 'center', 
+      alignItems: 'flex-end',
+    },
+    secondControl: {
+      width: 40,
+      height: 40,
+      borderRadius: 30,
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 30,
+    },
+    reloadControl: {
+      marginRight: 70,
+    },
+    stopControl: {
+      marginLeft: 70,
+    },
+    principalControl: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: 'white',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginBottom: 20,
+      borderWidth: 0.5,
+      borderColor: '#6c6c6c',
+      borderStyle: 'solid',
+    },
+    playControl: {
+      width: 40,
+      height: 40,
+      borderRadius: 25,
+      backgroundColor: '#FF3F35',
+    },
+    modalInfoOut: {
+      flex: 1,
+      justifyContent: 'flex-end',
+    },
+    modalInfo: {
+      alignItems: 'center',
+      backgroundColor: 'white',
+      margin:20,
+      borderRadius: 20,
+      paddingHorizontal: 30,
+      paddingVertical: 20,
+      elevation: 8,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.5,
+      shadowRadius: 4,
+    },
+    modalInfoTextHeader: {
+      textAlign: 'center',
+      fontWeight: 'bold',
+    },
+    containerModalInfoButton: {
+      flexDirection: 'row', 
+      justifyContent: 'center',
+      alignItems: 'flex-end',
+      marginTop: 25,
+    },
+    modalInfoButton: {
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    optionsModal: {
+      width: '100%',
+      flexDirection: 'row', 
+      justifyContent: 'space-between',
+      marginTop: 10,
+    },
+    separatorOptions: {
+      color: '#E5E5E5',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    separatorOptionsFinish: {
+      marginLeft: 23,
+      marginRight: 23,
+    },
+    textInputContainer: {
+      width: '100%',
+      marginVertical: 10,
+      height: 30,
+    },
+    textInput: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+    },
 });
