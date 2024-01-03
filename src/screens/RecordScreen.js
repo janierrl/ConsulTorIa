@@ -102,6 +102,7 @@ export default function ({ navigation }) {
   const upload = async () => {
     const data = JSON.stringify({
       prefix: `Consultorías TI/${dataParams.nameConsultancy}/Observaciones/${nameScreenRef.current}`,
+      bucket: dataParams.bucket
     });
 
     await axios.post("http://192.168.1.103:3002/nameFolders", data, {
@@ -162,7 +163,8 @@ export default function ({ navigation }) {
       observationType: dataParams.observationType,
       view: dataParams.view,
       collaborators: dataParams.collaborators,
-      goals: dataParams.goals
+      goals: dataParams.goals,
+      bucket: dataParams.bucket
     });
   };
 

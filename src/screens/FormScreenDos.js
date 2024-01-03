@@ -27,6 +27,7 @@ export default function ({ navigation }) {
   const [goals, setGoals] = useState([]);
   const [observationType, setObservationType] = useState("");
   const [author, setAuthor] = useState("");
+  const [bucket, setBucket] = useState("");
   const [view, setView] = useState("");
   const [consultants, setConsultants] = useState([]);
   const [collaborators, setCollaborators] = useState([]);
@@ -87,6 +88,7 @@ export default function ({ navigation }) {
   const sendData = async () => {
     const data = JSON.stringify({
       prefix: `Consultorías TI/${nameConsultancy}`,
+      bucket: bucket
     });
 
     await axios.post("http://192.168.1.103:3002/nameFolders", data, {
@@ -112,7 +114,8 @@ export default function ({ navigation }) {
               unit: dataParams.unit, 
               area: dataParams.area, 
               process: dataParams.process, 
-              worker: dataParams.worker
+              worker: dataParams.worker,
+              bucket: bucket
             }
           });
         }
@@ -171,6 +174,20 @@ export default function ({ navigation }) {
           },
         }).then(async response => {
           setAuthor(response.data.username);
+          
+          const data = JSON.stringify({
+            enterprise: response.data.enterprise
+          });
+
+          await axios.post("http://192.168.1.103:3004/getBucket", data, {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+          }).then(async response => {
+            setBucket(response.data);
+          }).catch(error => {
+            setInfo(error.response);
+          });
         }).catch(error => {
           console.log(error.response.data);
         });
@@ -182,7 +199,7 @@ export default function ({ navigation }) {
 
   useEffect(() => {
     getConsultants();
-  }, [author]);
+  }, [author, bucket]);
 
   return (
     <KeyboardAvoidingView behavior="height" style={{ flexGrow: 1 }}>

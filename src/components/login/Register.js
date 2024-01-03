@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ScrollView,
   TouchableOpacity,
@@ -10,6 +10,7 @@ import {
   Modal
 } from "react-native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Dropdown } from "react-native-element-dropdown";
 import axios from "axios";
 import Animated, {
   Easing,
@@ -21,14 +22,16 @@ import Animated, {
 export default function ({ navigation }) {
   const [name, setName] = useState("");
   const [lastname, setLastname] = useState("");
+  const [enterprise, setEnterprise] = useState("");
   const [user, setUser] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [enterprises, setEnterprises] = useState([]);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [infoModal, setInfoModal] = useState("");
-  const borderBottomWidth = Array.from({ length: 5 }, () => useSharedValue(1));
-  const borderColor = Array.from({ length: 5 }, () => useSharedValue('#939393'));
+  const borderBottomWidth = Array.from({ length: 6 }, () => useSharedValue(1));
+  const borderColor = Array.from({ length: 6 }, () => useSharedValue('#939393'));
 
   const isAnyFieldEmpty = () => {
     return !name || !lastname || !user || !email || !password;
@@ -87,6 +90,7 @@ export default function ({ navigation }) {
     const data = JSON.stringify({
       name: name,
       lastname: lastname,
+      enterprise: enterprise,
       username: user,
       email: email,
       password: password
@@ -104,10 +108,62 @@ export default function ({ navigation }) {
     });
   };
 
+  const getEnterprises = async () => {
+    await axios.get("http://192.168.1.103:3004/getEnterprises")
+      .then(async response => {
+        const dataArray = response.data.map(item => ({
+          value: item.trim(),
+          label: item.trim()
+        }));
+        setEnterprises(dataArray);
+      }).catch(error => {
+        setInfo(error.response.data);
+      });
+  };
+  
+  const RenderRightIcon = () => (
+    <View style={styles.chevronIcon}>
+      <Feather
+        name="chevron-down"
+        size={22}
+        color={'black'}
+      />
+    </View>
+  );
+
+  const RenderInputSearch = ({ onSearch }) => (
+    <View style={styles.containerInputSearch}>
+      <View style={styles.inputSearch}>
+        <TextInput
+          placeholder="Buscar"
+          onChangeText={(text) => {
+            onSearch(text);
+          }}
+        />
+        </View>
+    </View>
+  );
+
+  const RenderItem = ({ item, selected }) => (
+    <View
+      style={[
+        styles.containerItem,
+        { backgroundColor: selected ? 'lightblue' : null },
+      ]}
+    >
+      <Text style={styles.dataItem}>{item.label}</Text>
+      {selected && <Feather name="check" size={18} color="green" />}
+    </View>
+  );
+
   const setInfo = (info) => {
     setIsModalVisible(true);
     setInfoModal(info);
   };
+
+  useEffect(() => {
+    getEnterprises();
+  }, []);
 
   return (
     <KeyboardAvoidingView behavior="height" style={{ flexGrow: 1 }}>
@@ -169,8 +225,52 @@ export default function ({ navigation }) {
             <View>
               <Animated.View
                 style={[
-                  styles.textInput,
+                  styles.dropDown,
                   textInputStyles(2),
+                  styles.dropDownView,
+                ]}
+              >
+                <Dropdown
+                  selectedTextStyle={{
+                    fontSize: 14,
+                    color: "black",
+                  }}
+                  placeholderStyle={{
+                    fontSize: 14,
+                    color: "#939393",
+                  }}
+                  selectedTextProps={{
+                    numberOfLines: 1,
+                    ellipsizeMode: 'tail',
+                  }}
+                  containerStyle={styles.containerDropDownMenu}
+                  placeholder="Selecciona tu empresa"
+                  value={enterprise}
+                  data={enterprises}
+                  search={true}
+                  maxHeight={300}
+                  labelField="label"
+                  valueField="value"
+                  renderRightIcon={() => (
+                    <RenderRightIcon />
+                  )}
+                  renderInputSearch={(onSearch) => (
+                    <RenderInputSearch onSearch={onSearch} />
+                  )}
+                  renderItem={(item, selected) => (
+                    <RenderItem item={item} selected={selected} />
+                  )}
+                  onChange={(item) => setEnterprise(item.label)}
+                  onFocus={() => {handleFocus(2)}}
+                  onBlur={() => {handleBlur(2)}}
+                />
+              </Animated.View>
+            </View>
+            <View>
+              <Animated.View
+                style={[
+                  styles.textInput,
+                  textInputStyles(3),
                   styles.textInputUserView,
                 ]}
               >
@@ -182,10 +282,10 @@ export default function ({ navigation }) {
                   autoCompleteType="off"
                   autoCorrect={false}
                   onChangeText={(text) => {setUser(removeSpace(text))}}
-                  onFocus={() => {handleFocus(2)}}
+                  onFocus={() => {handleFocus(3)}}
                   onBlur={() => {
                     setUser(user.trim());
-                    handleBlur(2);
+                    handleBlur(3);
                   }}
                 />
               </Animated.View>
@@ -194,7 +294,7 @@ export default function ({ navigation }) {
               <Animated.View
                 style={[
                   styles.textInput,
-                  textInputStyles(3),
+                  textInputStyles(4),
                   styles.textInputEmailView,
                 ]}
               >
@@ -207,10 +307,10 @@ export default function ({ navigation }) {
                   autoCorrect={false}
                   keyboardType="email-address"
                   onChangeText={(text) => {setEmail(correctEmail(text))}}
-                  onFocus={() => {handleFocus(3)}}
+                  onFocus={() => {handleFocus(4)}}
                   onBlur={() => {
                     setEmail(email.trim());
-                    handleBlur(3);
+                    handleBlur(4);
                   }}
                 />
               </Animated.View>
@@ -219,7 +319,7 @@ export default function ({ navigation }) {
               <Animated.View
                 style={[
                   styles.textInput,
-                  textInputStyles(4),
+                  textInputStyles(5),
                   styles.textInputPasswordView,
                 ]}
               >
@@ -233,10 +333,10 @@ export default function ({ navigation }) {
                   autoCorrect={false}
                   secureTextEntry={!passwordVisible}
                   onChangeText={(text) => setPassword(removeSpace(text))}
-                  onFocus={() => {handleFocus(4)}}
+                  onFocus={() => {handleFocus(5)}}
                   onBlur={() => {
                     setPassword(password.trim());
-                    handleBlur(4);
+                    handleBlur(5);
                   }}
                 />
                 <TouchableOpacity onPress={handleIconPress} style={styles.passwordVisibilityToggle}>
@@ -334,6 +434,9 @@ const styles = StyleSheet.create({
   textInput: {
     marginBottom: 20,
   },
+  dropDown: {
+    marginBottom: 20,
+  },
   textInputNameView: {
     position: 'absolute',
     left: 0,
@@ -346,17 +449,24 @@ const styles = StyleSheet.create({
     right: 0,
     top: 50,
   },
+  dropDownView: {
+    position: 'absolute',
+    justifyContent: "center",
+    left: 0,
+    right: 0,
+    top: 100,
+  },
   textInputUserView: {
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 100,
+    top: 150,
   },
   textInputEmailView: {
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 150,
+    top: 200,
   },
   textInputPasswordView: {
     flexDirection: 'row',
@@ -365,17 +475,48 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    top: 200,
+    top: 250,
   },
   textInputPassword: {
     width: '90%',
   },
   textInputContainer: {
     marginTop: 35,
-    height: 250,
+    height: 300,
   },
   passwordVisibilityToggle: {
     
+  },
+  containerDropDownMenu: {
+    overflow: 'hidden',
+    marginVertical: 5,
+    borderRadius: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 4,
+  },
+  chevronIcon: {
+    marginLeft: 13,
+  },
+  containerInputSearch: {
+    paddingHorizontal: 10,
+  },
+  inputSearch: {
+    marginVertical: 10,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#939393',
+  },
+  dataItem: {
+    width: '90%',
+  },
+  containerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 10,
   },
   button: {
     marginTop: 35,

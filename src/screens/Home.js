@@ -26,6 +26,7 @@ export default function ({ route, navigation }) {
   const [folderContent, setFolderContent] = useState({});
   const [folderThumbnail, setFolderThumbnail] = useState({});
   const [user, setUser] = useState("");
+  const [bucket, setBucket] = useState("");
   const [showOptions, setShowOptions] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [infoModal, setInfoModal] = useState("");
@@ -42,7 +43,8 @@ export default function ({ route, navigation }) {
       prefix: 'Consultorías TI/',
       routeName: route.name,
       user: user,
-      isConsultancy: true
+      isConsultancy: true,
+      bucket: bucket
     });
 
     console.log(data);
@@ -119,6 +121,7 @@ export default function ({ route, navigation }) {
     const data = JSON.stringify({
       prefix: `Consultorías TI/${folderName}/`,
       nameZip: folderName,
+      bucket: bucket,
     });
 
     await axios.post("http://192.168.1.103:3002/downloadFolder", data, {
@@ -163,6 +166,7 @@ export default function ({ route, navigation }) {
     const folderName = folderData[selectedItemIndex].name;
     const data = JSON.stringify({
       prefix: `Consultorías TI/${folderName}/`,
+      bucket: bucket,
     });
 
     await axios.post("http://192.168.1.103:3002/deleteFile", data, {
@@ -216,10 +220,10 @@ export default function ({ route, navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      if (user) {
+      if (user && bucket) {
         getFoldersData();
       }
-    }, [user])
+    }, [user, bucket])
   );
 
   useEffect(() => {
@@ -246,8 +250,22 @@ export default function ({ route, navigation }) {
           },
         }).then(async response => {
           setUser(response.data.username);
+          
+          const data = JSON.stringify({
+            enterprise: response.data.enterprise
+          });
+
+          await axios.post("http://192.168.1.103:3004/getBucket", data, {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+          }).then(async response => {
+            setBucket(response.data);
+          }).catch(error => {
+            setInfo(error.response);
+          });
         }).catch(error => {
-          setInfo(error.response.data);
+          setInfo(error.response);
         });
       })
       .catch(error => {
@@ -270,7 +288,8 @@ export default function ({ route, navigation }) {
                 nameConsultancy: folderData[index].name,
                 author: folderContent[folderName.name].author,
                 collaborators: folderContent[folderName.name].collaborators,
-                user: user
+                user: user,
+                bucket: bucket
               });
             }}
           >

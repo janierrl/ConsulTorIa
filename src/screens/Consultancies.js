@@ -38,13 +38,14 @@ export default function ({ navigation }) {
   const [videoUrl, setVideoUrl] = useState(null);
   const [isVideoVisible, setIsVideoVisible] = useState(false);
   const [isElementVideoVisible, setIsElementVideoVisible] = useState(false);
-  const { nameConsultancy, author, collaborators, user } = useRoute().params;
+  const { nameConsultancy, author, collaborators, user, bucket } = useRoute().params;
   const iconRefs = useRef([]);
 
   const getFoldersData = async () => {
     const data = JSON.stringify({
       prefix: `Consultorías TI/${nameConsultancy}/Observaciones/`,
-      isConsultancy: false
+      isConsultancy: false,
+      bucket: bucket
     });
 
     console.log(data);
@@ -121,6 +122,7 @@ export default function ({ navigation }) {
     const data = JSON.stringify({
       prefix: `Consultorías TI/${nameConsultancy}/Observaciones/${folderName}/`,
       nameZip: folderName,
+      bucket: bucket
     });
 
     await axios.post("http://192.168.1.103:3002/downloadFolder", data, {
@@ -165,6 +167,7 @@ export default function ({ navigation }) {
     const folderName = folderData[selectedItemIndex].name;
     const data = JSON.stringify({
       prefix: `Consultorías TI/${nameConsultancy}/Observaciones/${folderName}/`,
+      bucket: bucket
     });
 
     await axios.post("http://192.168.1.103:3002/deleteFile", data, {
@@ -206,6 +209,7 @@ export default function ({ navigation }) {
   const playScreen = async (nameScreen) => {
     const data = JSON.stringify({
       prefix: `Consultorías TI/${nameConsultancy}/Observaciones/${nameScreen}/screen.mp4`,
+      bucket: bucket
     });
 
     await axios.post("http://192.168.1.103:3002/fileUrl", data, {
